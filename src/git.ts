@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import simpleGit, { type SimpleGit } from "simple-git";
 
@@ -126,6 +126,50 @@ export class Git {
 
 	async gitDiff(base: string, head: string): Promise<string> {
 		return this.git.diff([base, head]);
+	}
+
+	async isValidRef(ref: string): Promise<boolean> {
+		try {
+			await this.git.raw(["rev-parse", "--verify", ref]);
+			return true;
+		} catch {
+			return false;
+		}
+	}
+
+	async compareRefs(
+		sourceRef?: string,
+		targetRef?: string,
+	): Promise<{ diff: string; warnings: string[] }> {
+		const warnings: string[] = [];
+
+		// Check for unstaged changes and warn
+		const status = await this.git.status();
+		if (status.modified.length > 0 || status.not_added.length > 0) {
+			warnings.push(
+				`Warning: Unstaged changes detected (${status.modified.length} modified, ${status.not_added.length} untracked files). These are not included in diff calculation.`,
+			);
+		}
+
+		let diff: string;
+
+		if (sourceRef && targetRef) {
+			// Compare two specific refs
+			diff = await this.gitDiff(sourceRef, targetRef);
+		} else if (sourceRef && !targetRef) {
+			// Compare source ref with current HEAD
+			diff = await this.gitDiff(sourceRef, "HEAD");
+		} else {
+			// No refs provided - compare staged changes
+			if (status.staged.length === 0 && status.renamed.length === 0) {
+				warnings.push("No staged changes found to compare.");
+				diff = "";
+			} else {
+				diff = await this.git.diff(["--cached"]);
+			}
+		}
+
+		return { diff, warnings };
 	}
 
 	async getUncommittedChanges(): Promise<string> {
