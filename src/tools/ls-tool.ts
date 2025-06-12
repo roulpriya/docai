@@ -1,16 +1,24 @@
-import { Tool } from "../agents/tool";
-import { promises as fs } from "fs";
-import { join, resolve } from "path";
+import { promises as fs } from "node:fs";
+import { join, resolve } from "node:path";
+import type { Tool } from "../agents/tool";
 
-interface LsOptions {
+interface LsArgs {
 	path?: string;
 	all?: boolean;
 	long?: boolean;
 }
 
+interface LsItem {
+	name: string;
+	type: "directory" | "file";
+	size?: number;
+	modified?: string;
+	permissions?: string;
+}
+
 async function lsHandler(
-	args: LsOptions,
-): Promise<{ items: any[]; success: boolean; error?: string }> {
+	args: LsArgs,
+): Promise<{ items: LsItem[]; success: boolean; error?: string }> {
 	try {
 		const targetPath = resolve(args.path || process.cwd());
 
@@ -26,7 +34,7 @@ async function lsHandler(
 		}
 
 		const items = await fs.readdir(targetPath);
-		const results = [];
+		const results: LsItem[] = [];
 
 		for (const item of items) {
 			if (!args.all && item.startsWith(".")) {
@@ -74,7 +82,7 @@ async function lsHandler(
 	}
 }
 
-export const lsTool: Tool = {
+export const lsTool: Tool<LsArgs> = {
 	name: "ls",
 	description: "List directory contents",
 	parameters: {

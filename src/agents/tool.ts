@@ -1,12 +1,12 @@
-export interface Tool {
+export interface Tool<T> {
 	name: string;
 	description: string;
 	parameters: {
 		type: "object";
-		properties: Record<string, any>;
+		properties: Record<string, unknown>;
 		required?: string[];
 	};
-	handler: (args: any) => Promise<any> | any;
+	handler: (args: T) => Promise<unknown> | unknown;
 }
 
 export interface ToolCall {
@@ -20,5 +20,5 @@ export interface ToolCall {
 
 export interface ToolResult {
 	tool_call_id: string;
-	output: any;
+	output: unknown;
 }

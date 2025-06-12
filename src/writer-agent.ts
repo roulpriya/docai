@@ -1,8 +1,8 @@
-import {Agent} from "./agents";
-import {readTool, writeTool} from "./tools";
+import { Agent } from "./agents";
+import { lsTool, readTool, treeTool, writeTool } from "./tools";
 
 function generateSystemPrompt(projectDir: string, codeChanges: string) {
-    return `You are an AI-powered documentation agent for software projects.
+	return `You are an AI-powered documentation agent for software projects.
 Your task is to analyze code changes and update or create documentation files accordingly.
 You will be provided with the project directory structure and a summary of recent code changes.
 
@@ -66,18 +66,23 @@ Remember to use the provided tools only as defined, and do not attempt to access
 }
 
 export async function updateReadme(changes: string, projectDir: string) {
-    const agent = new Agent({
-        apiKey: process.env.OPENAI_API_KEY!,
-        model: "gpt-4.1",
-        systemPrompt: generateSystemPrompt(projectDir, changes),
-        temperature: 0.7,
-        tools: [readTool, writeTool],
-    });
+	const apiKey = process.env.OPENAI_API_KEY;
+	if (!apiKey) {
+		throw new Error("OPENAI_API_KEY environment variable is required");
+	}
 
-    const file = "README.md";
+	const agent = new Agent({
+		apiKey,
+		model: "gpt-4.1",
+		systemPrompt: generateSystemPrompt(projectDir, changes),
+		temperature: 0.7,
+		tools: [readTool, writeTool, treeTool, lsTool],
+	});
 
-    const prompt = `Given the following documentation file "${file}" and recent
+	const file = "README.md";
+
+	const prompt = `Given the following documentation file "${file}" and recent
     code changes, generate an updated version of the documentation and write it back to the file.`;
 
-    console.log(await agent.chat(prompt));
+	console.log(await agent.chat(prompt));
 }

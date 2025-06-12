@@ -1,6 +1,6 @@
-import { Tool } from "../agents";
-import { promises as fs } from "fs";
-import { join, relative, resolve } from "path";
+import { promises as fs } from "node:fs";
+import { join, relative, resolve } from "node:path";
+import type { Tool } from "../agents";
 
 interface TreeOptions {
 	path?: string;
@@ -18,10 +18,10 @@ interface TreeNode {
 
 async function buildTree(
 	dirPath: string,
-	maxDepth: number = 3,
-	currentDepth: number = 0,
-	showHidden: boolean = false,
-	dirsOnly: boolean = false,
+	maxDepth = 3,
+	currentDepth = 0,
+	showHidden = false,
+	dirsOnly = false,
 ): Promise<TreeNode[]> {
 	if (currentDepth >= maxDepth) {
 		return [];
@@ -139,7 +139,7 @@ async function treeHandler(
 	}
 }
 
-export const treeTool: Tool = {
+export const treeTool: Tool<TreeOptions> = {
 	name: "tree",
 	description: "Display directory structure as a tree",
 	parameters: {

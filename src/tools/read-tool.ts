@@ -1,8 +1,12 @@
-import { Tool } from "../agents/tool";
-import { promises as fs } from "fs";
-import { resolve } from "path";
+import { promises as fs } from "node:fs";
+import { resolve } from "node:path";
+import type { Tool } from "../agents/tool";
 
-async function readFileHandler(args: { path: string }): Promise<{
+interface ReadFileArgs {
+	path: string;
+}
+
+async function readFileHandler(args: ReadFileArgs): Promise<{
 	content: string;
 	success: boolean;
 	error?: string;
@@ -24,7 +28,7 @@ async function readFileHandler(args: { path: string }): Promise<{
 	}
 }
 
-export const readTool: Tool = {
+export const readTool: Tool<ReadFileArgs> = {
 	name: "read",
 	description: "Read the contents of a file from the filesystem",
 	parameters: {

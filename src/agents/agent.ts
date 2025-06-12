@@ -1,5 +1,5 @@
 import OpenAI from "openai";
-import { Tool, ToolCall, ToolResult } from "./tool";
+import type { Tool, ToolCall, ToolResult } from "./tool";
 
 export interface AgentConfig {
 	apiKey: string;
@@ -7,7 +7,8 @@ export interface AgentConfig {
 	systemPrompt: string;
 	temperature?: number;
 	maxTokens?: number;
-	tools?: Tool[];
+	// biome-ignore lint/suspicious/noExplicitAny: tools can be any type of tool
+	tools?: Tool<any>[];
 }
 
 export class Agent {
@@ -15,7 +16,8 @@ export class Agent {
 	private readonly systemPrompt: string;
 	private readonly model: string;
 	private readonly temperature: number;
-	private readonly tools: Map<string, Tool> = new Map();
+	// biome-ignore lint/suspicious/noExplicitAny: tools can be any type of tool
+	private readonly tools: Map<string, Tool<any>> = new Map();
 
 	constructor(config: AgentConfig) {
 		this.openai = new OpenAI({
@@ -25,7 +27,11 @@ export class Agent {
 		this.model = config.model ?? "gpt-4.1";
 		this.temperature = config.temperature ?? 0.7;
 
-		config.tools?.forEach((tool) => this.tools.set(tool.name, tool));
+		if (config.tools) {
+			for (const tool of config.tools) {
+				this.tools.set(tool.name, tool);
+			}
+		}
 	}
 
 	async chat(
