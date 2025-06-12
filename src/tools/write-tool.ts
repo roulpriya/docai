@@ -1,12 +1,14 @@
-import { Tool } from "../agents";
-import { promises as fs } from "fs";
-import { dirname, resolve } from "path";
+import { promises as fs } from "node:fs";
+import { dirname, resolve } from "node:path";
+import type { Tool } from "../agents";
 
-async function writeFileHandler(args: {
+interface WriteArgs {
 	path: string;
 	content: string;
 	createDir?: boolean;
-}): Promise<{
+}
+
+async function writeFileHandler(args: WriteArgs): Promise<{
 	success: boolean;
 	error?: string;
 }> {
@@ -22,7 +24,7 @@ async function writeFileHandler(args: {
 		return {
 			success: true,
 		};
-	} catch (error) {
+	} catch (error: unknown) {
 		return {
 			success: false,
 			error:
@@ -31,7 +33,7 @@ async function writeFileHandler(args: {
 	}
 }
 
-export const writeTool: Tool = {
+export const writeTool: Tool<WriteArgs> = {
 	name: "write",
 	description: "Write content to a file on the filesystem",
 	parameters: {
